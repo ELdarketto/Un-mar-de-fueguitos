@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controlador de Luces</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .color-button {
+            padding: 20px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .color-button:hover {
+            transform: scale(1.05);
+        }
+        #pattern-controls {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Controlador de Luces</h1>
+    <div class="color-grid" id="color-grid"></div>
+    <div id="pattern-controls">
+        <h2>Patrones</h2>
+        <button onclick="sendPattern('wave')">Ola</button>
+        <button onclick="sendPattern('pulse')">Pulso</button>
+        <button onclick="sendPattern('strobe')">Estroboscopio</button>
+    </div>
+
+    <script>
+        const socket = new WebSocket('wss://simple-websocket-server.herokuapp.com');
+        const colorGrid = document.getElementById('color-grid');
+
+        // Colores predefinidos
+        const colors = [
+            '#FF0000', // Rojo
+            '#00FF00', // Verde
+            '#0000FF', // Azul
+            '#FFFFFF', // Blanco
+            '#FFA500', // Naranja
+            '#FF00FF', // Magenta
+            '#00FFFF', // Cian
+            '#FFFF00', // Amarillo
+            '#800080'  // Púrpura
+        ];
+
+        // Crear botones de colores
+        colors.forEach(color => {
+            const button = document.createElement('button');
+            button.style.backgroundColor = color;
+            button.className = 'color-button';
+            button.onclick = () => sendColor(color);
+            colorGrid.appendChild(button);
+        });
+
+        function sendColor(color) {
+            socket.send(JSON.stringify({
+                type: 'color',
+                color: color
+            }));
+        }
+
+        function sendPattern(patternType) {
+            socket.send(JSON.stringify({
+                type: 'pattern',
+                pattern: patternType
+            }));
+        }
+
+        socket.onopen = () => {
+            console.log('Conectado al servidor');
+        };
+
+        socket.onerror = (error) => {
+            console.error('Error de conexión', error);
+        };
+    </script>
+</body>
+</html>

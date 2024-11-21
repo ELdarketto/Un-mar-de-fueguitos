@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luces del Concierto</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        #light {
+            width: 100%;
+            height: 100%;
+            transition: all 0.5s ease;
+        }
+    </style>
+</head>
+<body>
+    <div id="light"></div>
+
+    <script>
+        const socket = new WebSocket('wss://simple-websocket-server.herokuapp.com');
+        const lightElement = document.getElementById('light');
+
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            
+            if (data.type === 'color') {
+                lightElement.style.backgroundColor = data.color;
+            }
+            
+            if (data.type === 'pattern') {
+                switch(data.pattern) {
+                    case 'wave':
+                        waveEffect();
+                        break;
+                    case 'pulse':
+                        pulseEffect();
+                        break;
+                    case 'strobe':
+                        strobeEffect();
+                        break;
+                }
+            }
+        };
+
+        function waveEffect() {
+            let colors = ['#FF0000', '#00FF00', '#0000FF', '#FFFFFF'];
+            let index = 0;
+            const interval = setInterval(() => {
+                lightElement.style.backgroundColor = colors[index];
+                index = (index + 1) % colors.length;
+            }, 500);
+            setTimeout(() => clearInterval(interval), 5000);
+        }
+
+        function pulseEffect() {
+            lightElement.style.animation = 'pulse 2s infinite';
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @keyframes pulse {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.5; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        function strobeEffect() {
+            lightElement.style.animation = 'strobe 0.1s infinite';
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @keyframes strobe {
+                    0%, 100% { background-color: white; }
+                    50% { background-color: black; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    </script>
+</body>
+</html>
